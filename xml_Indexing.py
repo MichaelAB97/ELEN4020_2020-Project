@@ -2,7 +2,6 @@ import xml.etree.ElementTree as ET
 import numpy as np
 import csv
 from collections import defaultdict , ChainMap
-from math import ceil
 import threading
 import time
 
@@ -51,25 +50,29 @@ def parseXML(file_name):
                             speaker = person.text
                             peopleArray.append(speaker)
                     peopleArray = removeDuplicate(peopleArray) #removes any duplications
-
+                
+                # Appends speakers and debates to their respective lists, if they are in the people Array
                 if not peopleArray:
                     continue
                 else:
-                    for person in peopleArray:
-                        debateTopics.setdefault(title, []).append(person) #
+                    for person in peopleArray: #Key-value pairings
+                        debateTopics.setdefault(title, []).append(person) #returns the default values for missing keys
                         speakerTable.setdefault(person, []).append(title) #returns the default values for missing keys
-
+                
+    # Removes any topic duplications
     for keys in debateTopics:
         debateTopics[keys] = removeDuplicate(debateTopics[keys])
 
     return debateTopics, speakerTable
 
 
-def removeDuplicate(peopleList):
-    return list(dict.fromkeys(peopleList))
+# Removes Duplications from the lists
+def removeDuplicate(my_List):
+    return list(dict.fromkeys(my_List))
 
-
+# Writes the list to a CSV file with the given file_name
 def writeToCSVFile(debateTopics, file_name):
+
     # specifying the fields for csv file 
     fields = file_name.split('-')
 
@@ -89,10 +92,12 @@ def writeToCSVFile(debateTopics, file_name):
 # This function makes uses of the built-in mapping data structure functionality in python
 # to group multiple dictionaries to a single mapping. So when a chain search is done on
 # this map, it will return the values of the first key.
+
 def createChainMap(dict_1, dict_2):
     chain = ChainMap(dict_1, dict_2)
     return chain
 
+# This function uses the chain map and finds the value to the search query keys
 def chainSearch(chainMap, searchQuery_1, searchQuery_2):
     allSpeakersinDebates = []
 
@@ -111,18 +116,27 @@ if __name__ == "__main__":
     writeToCSVFile(speakers, 'speakersInDebates')
     cMap = createChainMap(debates, speakers)
     writeToCSVFile(cMap, 'chainMap')
-    #print(cMap)
-    #createMap(debates, speakers)
-    
-    f = open("map.txt", "w")
-    f.write(str(cMap))
-    f.close()
+
+
+    debate_1 = 'ESTIMATE OF EXPENDITURE, 1979-’80'
+    debate_2 = 'ALLEGED OMISSION OF WORDS FROM OFFICIAL REPORT OF SENATE DEBATES (HANSARD)'
 
     #Indexing used to find all the speakers that participated in two specific debates
-    result_1 = chainSearch(cMap, 'ESTIMATE OF EXPENDITURE, 1979-’80', 'ALLEGED OMISSION OF WORDS FROM OFFICIAL REPORT OF SENATE DEBATES (HANSARD)')
+    print("SEARCH RESULTS")
+    print("\n Speakers that participated in the following debates: ", debate_1, " & " , debate_2, "\n")
+    result_1 = chainSearch(cMap, debate_1 , debate_2)
     print(result_1)
+    print('\n')
     print("============================" *4)
+    print('\n')
+
+
+    speaker_1 = 'L. E. D. WINCHESTER'
+    speaker_2 = 'MINISTER OF LABOUR'
+
     # Indexing used to find the debates in which two speakers participated in
-    result_2 = chainSearch(cMap, 'L. E. D. WINCHESTER', 'MINISTER OF LABOUR')
-    print(*result_2)
+    print("SEARCH RESULTS")
+    print("Debates that speakers: ", speaker_1, " & " , speaker_2 , "participated in are the following: \n")
+    result_2 = chainSearch(cMap, speaker_1 , speaker_2 )
+    print(result_2)
 
