@@ -1,4 +1,6 @@
 import xml.etree.ElementTree as ET
+import numpy
+import csv
 
 def parseXML(file_name):
 
@@ -8,6 +10,8 @@ def parseXML(file_name):
     tree = ET.ElementTree(file=file_name)
     root = tree.getroot() # (debate)
     title = ''
+    speakerTable = []
+    debateTopics = []
 
     # Children Tags of parent root (debate):                       (         debate         )
     # child 1 = meta        | index = 0                           /       /         \        \
@@ -26,13 +30,41 @@ def parseXML(file_name):
             #Find <heading> tag in each of the debateSection children
             for heading in opening.findall(url+'heading'): 
                 # Return the text between the <heading> tag = name of the debate
-                title = heading.text 
+                title = heading.text
+                debateTopics.append(title)
                 #print(title)
                 #----------------To get parliament speaker---------------#
-                for speech in opening.findall(url+'speech'):
-                    for from_ in speech:#.findall(url+'person'):
+                for speech in opening.findall(url+'speech'): # <speech> tag
+                    for from_ in speech: # <from> & <p> tag
+                        # In between the from tag find <person> tag
                         for person in from_.findall(url+'person'):
-                            print(person.text)
+                            # Return the text between the <person> tag = name 
+                            # of parliament speaker
+                            speaker = person.text
+                            speakerTable.append(speaker)
+
+
+    print("Topics Number = ", len(debateTopics))
+    print("Speaker Number = ", len(speakerTable))
+    return debateTopics, speaker
+
+
+def writeToCSVFile(debateTopics, file_name):
+    # specifying the fields for csv file 
+    fields = file_name.split('-')
+
+    # writing to csv file 
+    with open(file_name, 'w') as csvfile:
+
+        # creating a csv dict writer object 
+        csvWriter = csv.writer(csvfile) 
+  
+        # writing data field names
+        csvWriter.writerow(fields)
+  
+        # writing data rows 
+        csvWriter.writerows(debateTopics.items())
+
 
 
 if __name__ == "__main__":
