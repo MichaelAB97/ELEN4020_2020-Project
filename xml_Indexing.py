@@ -9,15 +9,16 @@ def parseXML(file_name):
     root = tree.getroot() # (debate)
     title = ''
 
-    # Children Tags of parent root (debate):
-    # child 1 = meta        | index = 0
-    # child 2 = coverPage   | index = 1
+    # Children Tags of parent root (debate):                       (         debate         )
+    # child 1 = meta        | index = 0                           /       /         \        \
+    # child 2 = coverPage   | index = 1                         meta  coverPage  preface  debateBody
     # child 3 = preface     | index = 2
     # child 4 = debateBody  | index = 3
 
     rootNodeIndex = 0 #base node index = 0 as there is one parent for many children
     childIndex= 3 
 
+    #----------------To get debate topics-------------------#
     # For loop iteration to find the debate topics in the xml
     # At the root node along child 3 (debateBody)
     for child in root[rootNodeIndex][childIndex]: # debateSection
@@ -26,9 +27,12 @@ def parseXML(file_name):
             for heading in opening.findall(url+'heading'): 
                 # Return the text between the <heading> tag = name of the debate
                 title = heading.text 
-                print(title)
-
-    return title
+                #print(title)
+                #----------------To get parliament speaker---------------#
+                for speech in opening.findall(url+'speech'):
+                    for from_ in speech:#.findall(url+'person'):
+                        for person in from_.findall(url+'person'):
+                            print(person.text)
 
 
 if __name__ == "__main__":
