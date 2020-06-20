@@ -58,20 +58,16 @@ def parseXML(file_name):
                     for person in peopleArray:
                         debateTopics.setdefault(title, []).append(person) #
                         speakerTable.setdefault(person, []).append(title) #returns the default values for missing keys
-                        #try:
-                        #    speakerTable[person].index(title)
-                        #except (KeyError, ValueError) as ve:
-                        #    speakerTable.setdefault(person, []).append(title)
 
     for keys in debateTopics:
         debateTopics[keys] = removeDuplicate(debateTopics[keys])
 
-    #print("Topics Number = ", len(debateTopics))
-    #print("Speaker Number = ", len(speakerTable))
     return debateTopics, speakerTable
+
 
 def removeDuplicate(peopleList):
     return list(dict.fromkeys(peopleList))
+
 
 def writeToCSVFile(debateTopics, file_name):
     # specifying the fields for csv file 
@@ -128,5 +124,5 @@ if __name__ == "__main__":
     print("============================" *4)
     # Indexing used to find the debates in which two speakers participated in
     result_2 = chainSearch(cMap, 'L. E. D. WINCHESTER', 'MINISTER OF LABOUR')
-    print(result_2)
+    print(*result_2)
 
