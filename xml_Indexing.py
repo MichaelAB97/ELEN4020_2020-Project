@@ -54,10 +54,9 @@ def parseXML(file_name):
                     peopleArray = list(dict.fromkeys(peopleArray)) #removes any duplications
                 
                 # Appends speakers and debates to their respective lists, if they are in the people Array
-                if peopleArray:
-                    for person in peopleArray: #Key-value pairings
-                        debateTopics.setdefault(title, []).append(person) #returns the default values for missing keys
-                        speakerTable.setdefault(person, []).append(title) #returns the default values for missing keys
+                for person in peopleArray: #Key-value pairings
+                    debateTopics.setdefault(title, []).append(person) #returns the default values for missing keys
+                    speakerTable.setdefault(person, []).append(title) #returns the default values for missing keys
                 
     # Removes any topic duplications
     for keys in debateTopics:
