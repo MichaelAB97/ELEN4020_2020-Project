@@ -124,12 +124,12 @@ if __name__ == "__main__":
     writeToCSVFile(speakers, 'speakersInDebates')# Indexing used to find all the speakers that participated in two specific debates
     createBitMap(debates, speakers)
 
+
     # Parallelisation of Bit Map Indexing using Threads
     threads = list()
     start = 0 
     threadWidth = ceil(len(debates)/MAX_THREADS) #Divide Map into partitions for the threads
 
-    
     for threadIndex in range(MAX_THREADS):
         startTime = time.time()
         end = start + threadWidth
@@ -143,4 +143,9 @@ if __name__ == "__main__":
 
     endTime = time.time()
     print("Processing Time: " , endTime - startTime, "seconds")
-    print(map)
+
+
+    # Print Bit Map to text file
+    f = open("map.txt", "w")
+    f.write(str(map))
+    f.close()
