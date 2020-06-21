@@ -4,10 +4,15 @@ import csv
 from collections import defaultdict , ChainMap
 import threading
 import time
+import multiprocessing
+from os import getpid
+from joblib import Parallel, delayed
+from math import ceil
+
+map = {}
+BitMap = {}
 
 MAX_THREADS = 1
-
-
 
 def parseXML(file_name):
 
@@ -49,26 +54,20 @@ def parseXML(file_name):
                             # of parliament speaker
                             speaker = person.text
                             peopleArray.append(speaker)
-                    peopleArray = removeDuplicate(peopleArray) #removes any duplications
+                    peopleArray = list(dict.fromkeys(peopleArray)) #removes any duplications
                 
                 # Appends speakers and debates to their respective lists, if they are in the people Array
-                if not peopleArray:
-                    continue
-                else:
+                if peopleArray:
                     for person in peopleArray: #Key-value pairings
                         debateTopics.setdefault(title, []).append(person) #returns the default values for missing keys
                         speakerTable.setdefault(person, []).append(title) #returns the default values for missing keys
                 
     # Removes any topic duplications
     for keys in debateTopics:
-        debateTopics[keys] = removeDuplicate(debateTopics[keys])
+        debateTopics[keys] = list(dict.fromkeys(debateTopics[keys]))
 
     return debateTopics, speakerTable
 
-
-# Removes Duplications from the lists
-def removeDuplicate(my_List):
-    return list(dict.fromkeys(my_List))
 
 # Writes the list to a CSV file with the given file_name
 def writeToCSVFile(debateTopics, file_name):
@@ -89,54 +88,59 @@ def writeToCSVFile(debateTopics, file_name):
         csvWriter.writerows(debateTopics.items())
 
 
-# This function makes uses of the built-in mapping data structure functionality in python
-# to group multiple dictionaries to a single mapping. So when a chain search is done on
-# this map, it will return the values of the first key.
+def BitMapIndexing(start, end):
+    key = BitMap['widthKeys'][start: end]
+    for key, val in zip(key, range(start, end)):
+        for elem in BitMap['dictTop'][key]:
+            length = BitMap['heightKeys'].index(elem)
+            map[length][val] = 1
 
-def createChainMap(dict_1, dict_2):
-    chain = ChainMap(dict_1, dict_2)
-    return chain
 
-# This function uses the chain map and finds the value to the search query keys
-def chainSearch(chainMap, searchQuery_1, searchQuery_2):
-    allSpeakersinDebates = []
 
-    resultArray_1 = chainMap.get(searchQuery_1)
-    resultArray_2 = chainMap.get(searchQuery_2)
+def createBitMap(top, side):
 
-    allSpeakersinDebates.append(resultArray_1)
-    allSpeakersinDebates.append(resultArray_2)
+    # Obtaining the sizes for the Bit Map using the size of the dictionary
+    # results of the xml parser
+    width = len(top)
+    height = len(side)
+    dimensions = (height, width)
+
+    # Creating initial map which is populated by zeroes
+    global map
+    map = np.zeros(dimensions)
+
+    # Obtaining the keys from the results of the xml parser
+    widthKeys = list(top.keys())
+    heightKeys = list(side.keys())
     
-    return allSpeakersinDebates
-    
+    # Creating Bit Map Dictionary
+    global BitMap
+    BitMap = { 'heightKeys': heightKeys, 'dictTop': top, 'widthKeys': widthKeys }
 
+
+    
 if __name__ == "__main__":
     debates, speakers = parseXML('SenateHansard1979vol2.xml')
-    writeToCSVFile(debates, 'debatesBySpeakers') 
-    writeToCSVFile(speakers, 'speakersInDebates')
-    cMap = createChainMap(debates, speakers)
-    writeToCSVFile(cMap, 'chainMap')
+    writeToCSVFile(debates, 'debatesBySpeakers') # Indexing used to find the debates in which two speakers participated in
+    writeToCSVFile(speakers, 'speakersInDebates')# Indexing used to find all the speakers that participated in two specific debates
+    createBitMap(debates, speakers)
 
+    # Parallelisation of Bit Map Indexing using Threads
+    threads = list()
+    start = 0 
+    threadWidth = ceil(len(debates)/MAX_THREADS) #Divide Map into partitions for the threads
 
-    debate_1 = 'ESTIMATE OF EXPENDITURE, 1979-’80'
-    debate_2 = 'ALLEGED OMISSION OF WORDS FROM OFFICIAL REPORT OF SENATE DEBATES (HANSARD)'
+    for threadIndex in range(MAX_THREADS):
+        startTime = time.time()
+        end = start + threadWidth
+        thread = threading.Thread(target=BitMapIndexing, args=(start, end))
+        threads.append(thread)
+        thread.start()
+        start = end # new start is the end of the last partition
+        
+    for index, thread in enumerate(threads):
+        thread.join()
 
-    #Indexing used to find all the speakers that participated in two specific debates
-    print("SEARCH RESULTS")
-    print("\n Speakers that participated in the following debates: ", debate_1, " & " , debate_2, "\n")
-    result_1 = chainSearch(cMap, debate_1 , debate_2)
-    print(result_1)
-    print('\n')
-    print("============================" *4)
-    print('\n')
-
-
-    speaker_1 = 'L. E. D. WINCHESTER'
-    speaker_2 = 'MINISTER OF LABOUR'
-
-    # Indexing used to find the debates in which two speakers participated in
-    print("SEARCH RESULTS")
-    print("Debates that speakers: ", speaker_1, " & " , speaker_2 , "participated in are the following: \n")
-    result_2 = chainSearch(cMap, speaker_1 , speaker_2 )
-    print(result_2)
-
+    endTime = time.time()
+    print("Processing Time: " , endTime - startTime, " seconds")
+    print(map)
