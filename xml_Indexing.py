@@ -1,18 +1,15 @@
 import xml.etree.ElementTree as ET
 import numpy as np
 import csv
-from collections import defaultdict , ChainMap
+from collections import defaultdict
 import threading
 import time
-import multiprocessing
-from os import getpid
-from joblib import Parallel, delayed
 from math import ceil
 
 map = {}
 BitMap = {}
 
-MAX_THREADS = 1
+MAX_THREADS = 8
 
 def parseXML(file_name):
 
@@ -88,6 +85,8 @@ def writeToCSVFile(debateTopics, file_name):
         csvWriter.writerows(debateTopics.items())
 
 
+# This function creates the indices for each of the data values obtained in 
+# the xml parser
 def BitMapIndexing(start, end):
     key = BitMap['widthKeys'][start: end]
     for key, val in zip(key, range(start, end)):
@@ -96,13 +95,14 @@ def BitMapIndexing(start, end):
             map[length][val] = 1
 
 
-
-def createBitMap(top, side):
+# This function creates the bit map using the dimensions of the dictionaries from
+# the XML parser and initialises all the indices by populating them all with zeroes
+def createBitMap(data_set_1, data_set_2):
 
     # Obtaining the sizes for the Bit Map using the size of the dictionary
     # results of the xml parser
-    width = len(top)
-    height = len(side)
+    width = len(data_set_1)
+    height = len(data_set_2)
     dimensions = (height, width)
 
     # Creating initial map which is populated by zeroes
@@ -110,12 +110,12 @@ def createBitMap(top, side):
     map = np.zeros(dimensions)
 
     # Obtaining the keys from the results of the xml parser
-    widthKeys = list(top.keys())
-    heightKeys = list(side.keys())
+    widthKeys = list(data_set_1.keys())
+    heightKeys = list(data_set_2.keys())
     
     # Creating Bit Map Dictionary
     global BitMap
-    BitMap = { 'heightKeys': heightKeys, 'dictTop': top, 'widthKeys': widthKeys }
+    BitMap = { 'heightKeys': heightKeys, 'dictTop': data_set_1, 'widthKeys': widthKeys }
 
 
     
@@ -130,6 +130,7 @@ if __name__ == "__main__":
     start = 0 
     threadWidth = ceil(len(debates)/MAX_THREADS) #Divide Map into partitions for the threads
 
+    
     for threadIndex in range(MAX_THREADS):
         startTime = time.time()
         end = start + threadWidth
@@ -142,5 +143,5 @@ if __name__ == "__main__":
         thread.join()
 
     endTime = time.time()
-    print("Processing Time: " , endTime - startTime, " seconds")
+    print("Processing Time: " , endTime - startTime, "seconds")
     print(map)
