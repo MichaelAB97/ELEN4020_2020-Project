@@ -1,5 +1,5 @@
 # ELEN4020 - Course Project: Indexing XML Hansards
-This repository contains the implementation of a XML Indexing program for the [Akomo Ntoso](http://docs.oasis-open.org/legaldocml/ns/akn/3.0) schema
+This repository contains the implementation of a XML Indexing program for the [Akoma Ntoso](http://docs.oasis-open.org/legaldocml/ns/akn/3.0) schema
 
 - The XML dataset is contained in: `SenateHansard1979vol2.xml`
 - The output of the XML parser will be stored in two respecitive csv files: `debatesBySpeakers.csv` & `speakersInDebates.csv`
