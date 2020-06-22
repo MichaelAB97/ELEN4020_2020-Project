@@ -9,11 +9,11 @@ from math import ceil
 map = {}
 BitMap = {}
 
-MAX_THREADS = 8
+MAX_THREADS = 2
 
 def parseXML(file_name):
 
-    # XML Namespace Document for Akoma Ntoso Version 1.0
+    # XML Namespace Document for Akomo Ntoso Version 1.0
     url = '{http://docs.oasis-open.org/legaldocml/ns/akn/3.0}'
 
     tree = ET.ElementTree(file=file_name)
@@ -142,7 +142,8 @@ if __name__ == "__main__":
         thread.join()
 
     endTime = time.time()
-    print("Processing Time: " , endTime - startTime, "seconds")
+    print("For %d threads" % MAX_THREADS)
+    print("Indexing Processing Time: " , endTime - startTime, "seconds")
 
 
     # Print Bit Map to text file

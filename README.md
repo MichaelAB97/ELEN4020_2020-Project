@@ -1,4 +1,10 @@
 # ELEN4020 - Course Project: Indexing XML Hansards
+This repository contains the implementation of a XML Indexing program for the [Akomo Ntoso](http://docs.oasis-open.org/legaldocml/ns/akn/3.0) schema
+
+- The XML dataset is contained in: `SenateHansard1979vol2.xml`
+- The output of the XML parser will be stored in two respecitive csv files: `debatesBySpeakers.csv` & `speakersInDebates.csv`
+- The output Bit Map will be stored in: `map.txt`
+
 
 ## Build Instructions
 The algorithms for this lab is written in Python 3.6
@@ -23,4 +29,4 @@ Please ensure that the following are installed:
 
 
 ## Commands to run the XML Indexing Algorithm:
-- xml_Indexing: `python3 xml_Indexing`
+- xml_Indexing: `python3 xml_Indexing.py`
